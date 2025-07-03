@@ -1,5 +1,7 @@
 const token = localStorage.getItem('token');
-
+  if (!token) {
+      window.location.href = 'login.html';
+    }
 async function fetchTasks() {
   const response = await fetch('http://127.0.0.1:8000/api/tasks', {
     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
