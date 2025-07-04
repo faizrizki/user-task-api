@@ -25,9 +25,6 @@ Sistem manajemen user dan task dengan role-based authorization (**Admin, Manager
 
 ---
 
-## 🗂 ERD
-
-
 +--------------------+          +-------------------------------+      +-------------------------+
 |       Users        |          |       Tasks                   |      |     Activity Logs       |
 +--------------------+          +-------------------------------+      +-------------------------+
