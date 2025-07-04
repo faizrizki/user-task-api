@@ -27,7 +27,86 @@ Sistem manajemen user dan task dengan role-based authorization (**Admin, Manager
 
 ## 🗂 ERD
 
-![ERD](erd.png)
+
++--------------------+          +-------------------------------+      +-------------------------+
+|       Users        |          |       Tasks                   |      |     Activity Logs       |
++--------------------+          +-------------------------------+      +-------------------------+
+| id (UUID, PK)      |<------.  | id (UUID, PK)                 |      | id (UUID, PK)           |
+| name (string)      |       |  | title (string)                |      | user_id (UUID, FK)      |
+| email (string, UQ) |       '--| description (text)            |      | action (string)         |
+| password (string)  |          | assigned_to (UUID, FK->Users) |      | description (text)      |
+| role (enum)        |          | status (enum)                 |      | logged_at (datetime)    |
+| status (boolean)   |          | due_date (date)               |      +-------------------------+
++--------------------+          | created_by (UUID, FK->Users)  |
+                                +-------------------------------+ 
+🗂️ Entity Relationship Diagram (ERD)
+erDiagram
+    User {
+        UUID id PK
+        string name
+        string email UK
+        string password
+        enum role "admin, manager, staff"
+        boolean status "active/inactive"
+    }
+
+    Task {
+        UUID id PK
+        string title
+        text description
+        UUID assigned_to FK "relasi ke User"
+        enum status "pending, in progress, done"
+        date due_date
+        UUID created_by FK
+    }
+
+    ActivityLog {
+        UUID id PK
+        UUID user_id FK
+        string action "create_user, update_task, etc."
+        text description
+        datetime logged_at
+    }
+
+    User ||--o{ Task : "assigned_to"
+    User ||--o{ Task : "created_by"
+    User ||--o{ ActivityLog : "user_id"
+
+📌 Detail Entitas
+
+1. User
+
+| Field        | Tipe Data | Keterangan                                  |
+| ------------ | --------- | ------------------------------------------- |
+| **id**       | UUID      | Pengidentifikasi unik untuk pengguna (PK)   |
+| **name**     | string    | Nama pengguna                               |
+| **email**    | string    | Email pengguna (unique)                     |
+| **password** | string    | Kata sandi (di-hash)                        |
+| **role**     | enum      | Peran pengguna: `admin`, `manager`, `staff` |
+| **status**   | boolean   | Status akun: `active` atau `inactive`       |
+
+2. Task
+
+| Field            | Tipe Data | Keterangan                                     |
+| ---------------- | --------- | ---------------------------------------------- |
+| **id**           | UUID      | Pengidentifikasi unik untuk tugas (PK)         |
+| **title**        | string    | Judul tugas                                    |
+| **description**  | text      | Deskripsi tugas                                |
+| **assigned\_to** | UUID      | ID pengguna yang ditugaskan (FK ke User)       |
+| **status**       | enum      | Status tugas: `pending`, `in progress`, `done` |
+| **due\_date**    | date      | Tanggal jatuh tempo tugas                      |
+| **created\_by**  | UUID      | ID pengguna yang membuat tugas (FK ke User)    |
+
+3. ActivityLog
+
+| Field           | Tipe Data | Keterangan                                               |
+| --------------- | --------- | -------------------------------------------------------- |
+| **id**          | UUID      | Pengidentifikasi unik untuk log aktivitas (PK)           |
+| **user\_id**    | UUID      | ID pengguna terkait aktivitas (FK ke User)               |
+| **action**      | string    | Aksi yang dilakukan, misal: `create_user`, `update_task` |
+| **description** | text      | Deskripsi rinci aktivitas                                |
+| **logged\_at**  | datetime  | Waktu pencatatan aktivitas                               |
+
 
 ---
 
@@ -143,85 +222,6 @@ MySQL / MariaDB
 Postman (testing)
 
 VSCode
-
-+--------------------+          +-------------------------------+      +-------------------------+
-|       Users        |          |       Tasks                   |      |     Activity Logs       |
-+--------------------+          +-------------------------------+      +-------------------------+
-| id (UUID, PK)      |<------.  | id (UUID, PK)                 |      | id (UUID, PK)           |
-| name (string)      |       |  | title (string)                |      | user_id (UUID, FK)      |
-| email (string, UQ) |       '--| description (text)            |      | action (string)         |
-| password (string)  |          | assigned_to (UUID, FK->Users) |      | description (text)      |
-| role (enum)        |          | status (enum)                 |      | logged_at (datetime)    |
-| status (boolean)   |          | due_date (date)               |      +-------------------------+
-+--------------------+          | created_by (UUID, FK->Users)  |
-                                +-------------------------------+ 
-🗂️ Entity Relationship Diagram (ERD)
-erDiagram
-    User {
-        UUID id PK
-        string name
-        string email UK
-        string password
-        enum role "admin, manager, staff"
-        boolean status "active/inactive"
-    }
-
-    Task {
-        UUID id PK
-        string title
-        text description
-        UUID assigned_to FK "relasi ke User"
-        enum status "pending, in progress, done"
-        date due_date
-        UUID created_by FK
-    }
-
-    ActivityLog {
-        UUID id PK
-        UUID user_id FK
-        string action "create_user, update_task, etc."
-        text description
-        datetime logged_at
-    }
-
-    User ||--o{ Task : "assigned_to"
-    User ||--o{ Task : "created_by"
-    User ||--o{ ActivityLog : "user_id"
-
-📌 Detail Entitas
-
-1. User
-
-| Field        | Tipe Data | Keterangan                                  |
-| ------------ | --------- | ------------------------------------------- |
-| **id**       | UUID      | Pengidentifikasi unik untuk pengguna (PK)   |
-| **name**     | string    | Nama pengguna                               |
-| **email**    | string    | Email pengguna (unique)                     |
-| **password** | string    | Kata sandi (di-hash)                        |
-| **role**     | enum      | Peran pengguna: `admin`, `manager`, `staff` |
-| **status**   | boolean   | Status akun: `active` atau `inactive`       |
-
-2. Task
-
-| Field            | Tipe Data | Keterangan                                     |
-| ---------------- | --------- | ---------------------------------------------- |
-| **id**           | UUID      | Pengidentifikasi unik untuk tugas (PK)         |
-| **title**        | string    | Judul tugas                                    |
-| **description**  | text      | Deskripsi tugas                                |
-| **assigned\_to** | UUID      | ID pengguna yang ditugaskan (FK ke User)       |
-| **status**       | enum      | Status tugas: `pending`, `in progress`, `done` |
-| **due\_date**    | date      | Tanggal jatuh tempo tugas                      |
-| **created\_by**  | UUID      | ID pengguna yang membuat tugas (FK ke User)    |
-
-3. ActivityLog
-
-| Field           | Tipe Data | Keterangan                                               |
-| --------------- | --------- | -------------------------------------------------------- |
-| **id**          | UUID      | Pengidentifikasi unik untuk log aktivitas (PK)           |
-| **user\_id**    | UUID      | ID pengguna terkait aktivitas (FK ke User)               |
-| **action**      | string    | Aksi yang dilakukan, misal: `create_user`, `update_task` |
-| **description** | text      | Deskripsi rinci aktivitas                                |
-| **logged\_at**  | datetime  | Waktu pencatatan aktivitas                               |
 
 
 👤 Penulis
