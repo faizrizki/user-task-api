@@ -71,6 +71,9 @@ php artisan migrate
 php artisan serve
 Akses di: http://127.0.0.1:8000
 
+7. Jalankan Frontend
+Menggunakan Live Server
+
 🔑 Endpoint Utama
 | Method | Endpoint        | Role Akses            | Deskripsi                    |
 | ------ | --------------- | --------------------- | ---------------------------- |
