@@ -1,66 +1,229 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📝 User Task Management API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem manajemen user dan task dengan role-based authorization (**Admin, Manager, Staff**) menggunakan Laravel dan Sanctum.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ⚡ Fitur
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+✅ **Auth**
+- Login (Sanctum Token)
+- Middleware status aktif user
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+✅ **User**
+- **Admin**: create user, view all users
+- **Manager**: view users
+- **Staff**: tidak memiliki akses user management
 
-## Learning Laravel
+✅ **Task**
+- **Admin**: CRUD semua task
+- **Manager**: create & manage task assigned ke staff
+- **Staff**: view task assigned, update status task sendiri
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+✅ **Activity Logs**
+- View logs (hanya admin)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🗂 ERD
 
-## Laravel Sponsors
+![ERD](erd.png)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## ⚙️ Setup
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+1. **Clone repository**
 
-## Contributing
+```bash
+git clone https://github.com/username/user-task-api.git
+cd user-task-api
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2. Install dependencies
+composer install
 
-## Code of Conduct
+3. Copy file .env dan generate app key
+cp .env.example .env
+php artisan key:generate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. Atur koneksi database di .env
+APP_NAME=UserTaskAPI
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
 
-## Security Vulnerabilities
+LOG_CHANNEL=stack
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=user_task_db
+DB_USERNAME=root
+DB_PASSWORD=
 
-## License
+SANCTUM_STATEFUL_DOMAINS=localhost
+SESSION_DOMAIN=localhost
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Setelah itu jalankan:
+php artisan key:generate
+
+5. Migrasi database
+php artisan migrate
+
+6. Jalankan server lokal
+php artisan serve
+Akses di: http://127.0.0.1:8000
+
+🔑 Endpoint Utama
+| Method | Endpoint        | Role Akses            | Deskripsi                    |
+| ------ | --------------- | --------------------- | ---------------------------- |
+| POST   | /api/login      | All                   | Login user (email, password) |
+| GET    | /api/users      | Admin, Manager        | Lihat list user              |
+| POST   | /api/users      | Admin                 | Buat user baru               |
+| GET    | /api/tasks      | Admin, Manager, Staff | Lihat list task              |
+| POST   | /api/tasks      | Admin, Manager        | Buat task baru               |
+| PUT    | /api/tasks/{id} | Admin, Manager, Staff | Update task                  |
+| DELETE | /api/tasks/{id} | Admin, Manager        | Hapus task                   |
+| GET    | /api/logs       | Admin                 | Lihat activity logs          |
+
+
+🔒 Authorization Policy
+Didefinisikan di AuthServiceProvider.php menggunakan Gate::define.
+| Policy       | Role                  |
+| ------------ | --------------------- |
+| manage-users | admin                 |
+| view-users   | admin, manager        |
+| manage-tasks | admin, manager, staff |
+| view-logs    | admin                 |
+
+💡 Contoh Request JSON
+🔑 Login
+POST /api/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "password"
+}
+
+👤 Create User (Admin)
+POST /api/users
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "name": "Manager One",
+    "email": "manager@example.com",
+    "password": "password",
+    "role": "manager"
+}
+
+✅ Create Task (Admin / Manager)
+POST /api/tasks
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "title": "Finish Report",
+    "description": "Prepare monthly report",
+    "assigned_to": "user-uuid",
+    "due_date": "2025-07-05"
+}
+
+🛠 Tools & Teknologi
+PHP 8.x
+
+Laravel 9.x
+
+Sanctum (API Token)
+
+MySQL / MariaDB
+
+Postman (testing)
+
+VSCode
+
++--------------------+          +-------------------------------+      +-------------------------+
+|       Users        |          |       Tasks                   |      |     Activity Logs       |
++--------------------+          +-------------------------------+      +-------------------------+
+| id (UUID, PK)      |<------.  | id (UUID, PK)                 |      | id (UUID, PK)           |
+| name (string)      |       |  | title (string)                |      | user_id (UUID, FK)      |
+| email (string, UQ) |       '--| description (text)            |      | action (string)         |
+| password (string)  |          | assigned_to (UUID, FK->Users) |      | description (text)      |
+| role (enum)        |          | status (enum)                 |      | logged_at (datetime)    |
+| status (boolean)   |          | due_date (date)               |      +-------------------------+
++--------------------+          | created_by (UUID, FK->Users)  |
+                                +-------------------------------+ 
+🗂️ Entity Relationship Diagram (ERD)
+erDiagram
+    User {
+        UUID id PK
+        string name
+        string email UK
+        string password
+        enum role "admin, manager, staff"
+        boolean status "active/inactive"
+    }
+
+    Task {
+        UUID id PK
+        string title
+        text description
+        UUID assigned_to FK "relasi ke User"
+        enum status "pending, in progress, done"
+        date due_date
+        UUID created_by FK
+    }
+
+    ActivityLog {
+        UUID id PK
+        UUID user_id FK
+        string action "create_user, update_task, etc."
+        text description
+        datetime logged_at
+    }
+
+    User ||--o{ Task : "assigned_to"
+    User ||--o{ Task : "created_by"
+    User ||--o{ ActivityLog : "user_id"
+
+📌 Detail Entitas
+
+1. User
+
+| Field        | Tipe Data | Keterangan                                  |
+| ------------ | --------- | ------------------------------------------- |
+| **id**       | UUID      | Pengidentifikasi unik untuk pengguna (PK)   |
+| **name**     | string    | Nama pengguna                               |
+| **email**    | string    | Email pengguna (unique)                     |
+| **password** | string    | Kata sandi (di-hash)                        |
+| **role**     | enum      | Peran pengguna: `admin`, `manager`, `staff` |
+| **status**   | boolean   | Status akun: `active` atau `inactive`       |
+
+2. Task
+
+| Field            | Tipe Data | Keterangan                                     |
+| ---------------- | --------- | ---------------------------------------------- |
+| **id**           | UUID      | Pengidentifikasi unik untuk tugas (PK)         |
+| **title**        | string    | Judul tugas                                    |
+| **description**  | text      | Deskripsi tugas                                |
+| **assigned\_to** | UUID      | ID pengguna yang ditugaskan (FK ke User)       |
+| **status**       | enum      | Status tugas: `pending`, `in progress`, `done` |
+| **due\_date**    | date      | Tanggal jatuh tempo tugas                      |
+| **created\_by**  | UUID      | ID pengguna yang membuat tugas (FK ke User)    |
+
+3. ActivityLog
+
+| Field           | Tipe Data | Keterangan                                               |
+| --------------- | --------- | -------------------------------------------------------- |
+| **id**          | UUID      | Pengidentifikasi unik untuk log aktivitas (PK)           |
+| **user\_id**    | UUID      | ID pengguna terkait aktivitas (FK ke User)               |
+| **action**      | string    | Aksi yang dilakukan, misal: `create_user`, `update_task` |
+| **description** | text      | Deskripsi rinci aktivitas                                |
+| **logged\_at**  | datetime  | Waktu pencatatan aktivitas                               |
+
+
+👤 Penulis
+Muhammad Rizki
+GitHub • Bogor, Indonesia
