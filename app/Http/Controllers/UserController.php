@@ -6,23 +6,24 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Gate;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
     public function index()
     {
         if (!Gate::allows('view-users')) {
+            \Log::warning('Unauthorized user list access by user: ' . auth()->id());
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $users = User::all();
-        return response()->json($users);
+        return response()->json(User::all());
     }
 
     public function store(Request $request)
     {
         if (!Gate::allows('manage-users')) {
+            \Log::warning('Unauthorized user create attempt by user: ' . auth()->id());
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

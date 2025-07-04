@@ -1,11 +1,18 @@
 const token = localStorage.getItem('token');
 const role = localStorage.getItem('role');
-  if (!token) {
-      window.location.href = 'login.html';
-    }
+const currentUserId = localStorage.getItem('user_id'); // Pastikan sudah diset saat login
+
+if (!token) {
+  window.location.href = 'login.html';
+}
+
+console.log('Using token:', token);
+
 async function fetchTasks() {
   const response = await fetch('http://127.0.0.1:8000/api/tasks', {
-    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+    headers: { 
+      'Authorization': 'Bearer ' + token, 
+      'Accept': 'application/json' }
   });
 
   const createuser = document.getElementById('createuser');
@@ -20,9 +27,8 @@ async function fetchTasks() {
 
   tasks.forEach(task => {
     const badgeColor = task.status === 'done' ? 'success' :
-                   task.status === 'in_progress' ? 'warning' :
-                   task.status === 'overdue' ? 'danger' : 'secondary';
-
+                       task.status === 'in_progress' ? 'warning' :
+                       task.status === 'overdue' ? 'danger' : 'secondary';
 
     taskList.innerHTML += `
       <div class="col-md-4">
@@ -32,11 +38,10 @@ async function fetchTasks() {
             <p class="card-text">${task.description}</p>
             <span class="badge bg-${badgeColor}">${task.status}</span>
             <p class="mt-2">Due: ${task.due_date}</p>
-            <!-- Tambah Edit/Delete button sesuai role -->
 
-            ${(role === 'admin' || role === 'manager' || (role === 'staff' && task.assigned_to === currentUserId)) ? `
-              <button class="btn btn-primary btn-sm">Edit</button>
-              <button class="btn btn-danger btn-sm">Delete</button>
+            ${(role === 'admin' || role === 'manager' || (role === 'staff' && (task.assigned_to + '' === currentUserId))) ? `
+              <button class="btn btn-primary btn-sm edit-btn" data-id="${task.id}">Edit</button>
+              <button class="btn btn-danger btn-sm delete-btn" data-id="${task.id}">Delete</button>
             ` : ''}
 
           </div>
@@ -44,6 +49,55 @@ async function fetchTasks() {
       </div>
     `;
   });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const taskId = btn.getAttribute('data-id');
+      deleteTask(taskId);
+    });
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const taskId = btn.getAttribute('data-id');
+      editTask(taskId);
+    });
+  });
 }
+
+// Fungsi hapus task
+async function deleteTask(taskId) {
+  if (!confirm('Are you sure you want to delete this task?')) return;
+
+  const response = await fetch(`http://127.0.0.1:8000/api/tasks/${taskId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/json'
+    }
+  });
+
+  if (response.ok) {
+    alert('Task deleted successfully');
+    fetchTasks(); // refresh list
+  } else {
+    const error = await response.json();
+    console.error('Delete failed:', error);
+    alert('Failed to delete task: ' + (error.message || 'Unknown error'));
+  }
+
+}
+
+// Fungsi edit task
+function editTask(taskId) {
+  window.location.href = `edit_task.html?id=${taskId}`;
+}
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('user_id');
+  window.location.href = 'login.html';
+});
 
 fetchTasks();

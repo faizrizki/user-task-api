@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Login successful, redirecting...');
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.user.role);
+      localStorage.setItem('user_id', data.user.id);
       window.location.href = 'index.html';
     } else {
       console.log('Login failed:', data.message);

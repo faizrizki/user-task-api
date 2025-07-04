@@ -6,7 +6,6 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class TaskController extends Controller
@@ -15,21 +14,34 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        // Staff: hanya lihat task assigned ke dirinya
         if ($user->role === 'staff') {
+            // Staff: hanya lihat task assigned ke dirinya
             $tasks = Task::where('assigned_to', $user->id)->get();
         }
-        // Manager: lihat task yang dibuatnya atau timnya
         elseif ($user->role === 'manager') {
-            $tasks = Task::where('created_by', $user->id)->get();
+            $tasks = Task::where('created_by', $user->id)
+                ->orWhereIn('assigned_to', function($query) {
+                    $query->select('id')
+                        ->from('users')
+                        ->where('role', 'staff');
+                })
+                ->get();
         }
-        // Admin: lihat semua
+
         else {
+            // Admin: lihat semua
             $tasks = Task::all();
         }
 
+        \Log::info('Task index accessed by: '.auth()->user()->role);
+        \Log::info('User '.$user->id.' role '.$user->role.' fetching tasks.');
+        \Log::info('Tasks fetched: ', $tasks->toArray()); 
+          
         return response()->json($tasks);
     }
+
+
+
 
     public function store(Request $request)
     {
@@ -60,25 +72,45 @@ class TaskController extends Controller
 
     public function update(Request $request, $id)
     {
+        \Log::info('Updating task id: '.$id.' by user: '.Auth::id(), $request->all());
+
         $task = Task::findOrFail($id);
         $user = Auth::user();
 
-        // Only admin or creator can update
-        if ($user->id !== $task->created_by && $user->role !== 'admin') {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        // Staff: hanya bisa update status jika task diassign ke dia
+        if ($user->role === 'staff') {
+            if ($task->assigned_to !== $user->id) {
+                \Log::warning('Unauthorized staff update attempt by user: '.$user->id);
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
 
-        $validated = $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'status' => 'required|in:pending,in_progress,done',
-            'due_date' => 'required|date',
-        ]);
+            $validated = $request->validate([
+                'status' => 'required|in:pending,in_progress,done',
+            ]);
+        }
+        // Manager & Admin
+        else {
+            // Only admin or creator can update
+            if ($user->id !== $task->created_by && $user->role !== 'admin') {
+                \Log::warning('Unauthorized update attempt by user: '.$user->id);
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+
+            $validated = $request->validate([
+                'title' => 'required',
+                'description' => 'required',
+                'status' => 'required|in:pending,in_progress,done',
+                'due_date' => 'required|date',
+            ]);
+        }
 
         $task->update($validated);
 
+        \Log::info('Task updated successfully.');
+
         return response()->json($task);
     }
+
 
     public function destroy($id)
     {

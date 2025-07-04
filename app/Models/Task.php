@@ -28,9 +28,12 @@ class Task extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->id = (string) Str::uuid();
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
         });
     }
+
 
     // Relasi ke User
     public function assignedUser()
