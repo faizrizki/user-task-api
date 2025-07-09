@@ -13,8 +13,27 @@
     <div id="createuser"></div>
     <button id="logoutBtn" class="btn btn-outline-danger btn-sm">Logout</button>
   </div>
-  <div  id="taskList" class="row"></div>
+
+  <!-- Create Task Form for Manager -->
+  <div id="createTaskSection" class="mb-4" style="display:none;">
+    <h4>Create Task</h4>
+    <input type="text" id="title" class="form-control mb-2" placeholder="Task Title">
+    <input type="text" id="description" class="form-control mb-2" placeholder="Description">
+    <input type="text" id="assigned_to" class="form-control mb-2" placeholder="Assign to (User ID)">
+    <input type="date" id="due_date" class="form-control mb-2">
+    <button onclick="createTask()" class="btn btn-primary">Create Task</button>
+  </div>
+
+  <a href="logs.html" class="btn btn-primary mb-3">View Activity Logs</a>
+
+
+  <div id="taskList" class="row"></div>
 
   <script src="js/dashboard.js"></script>
+  <script>
+    if (role === 'manager') {
+      document.getElementById('createTaskSection').style.display = 'block';
+    }
+  </script>
 </body>
 </html>

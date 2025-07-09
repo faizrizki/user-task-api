@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Accept': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        mode: 'cors', // Ensure CORS is enabled
+        mode: 'cors', 
     });
 
     console.log('Fetch response status:', response.status);

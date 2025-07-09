@@ -1,6 +1,6 @@
 const token = localStorage.getItem('token');
-const role = localStorage.getItem('role');
-const currentUserId = localStorage.getItem('user_id'); // Pastikan sudah diset saat login
+var role = localStorage.getItem('role');
+const currentUserId = localStorage.getItem('user_id');
 
 if (!token) {
   window.location.href = 'login.html';
@@ -12,7 +12,8 @@ async function fetchTasks() {
   const response = await fetch('http://127.0.0.1:8000/api/tasks', {
     headers: { 
       'Authorization': 'Bearer ' + token, 
-      'Accept': 'application/json' }
+      'Accept': 'application/json'
+    }
   });
 
   const createuser = document.getElementById('createuser');
@@ -43,7 +44,6 @@ async function fetchTasks() {
               <button class="btn btn-primary btn-sm edit-btn" data-id="${task.id}">Edit</button>
               <button class="btn btn-danger btn-sm delete-btn" data-id="${task.id}">Delete</button>
             ` : ''}
-
           </div>
         </div>
       </div>
@@ -65,6 +65,43 @@ async function fetchTasks() {
   });
 }
 
+// Fungsi create task (untuk manager)
+async function createTask() {
+  const title = document.getElementById('title').value;
+  const description = document.getElementById('description').value;
+  const assigned_to = document.getElementById('assigned_to').value;
+  const due_date = document.getElementById('due_date').value;
+
+  if (!title || !description || !assigned_to || !due_date) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  const response = await fetch('http://127.0.0.1:8000/api/tasks', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title, description, assigned_to, due_date })
+  });
+
+  if (response.ok) {
+    alert('Task created successfully');
+    // Clear form
+    document.getElementById('title').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('assigned_to').value = '';
+    document.getElementById('due_date').value = '';
+    fetchTasks();
+  } else {
+    const error = await response.json();
+    console.error('Create task failed:', error);
+    alert('Failed to create task: ' + (error.message || 'Unknown error'));
+  }
+}
+
 // Fungsi hapus task
 async function deleteTask(taskId) {
   if (!confirm('Are you sure you want to delete this task?')) return;
@@ -79,20 +116,20 @@ async function deleteTask(taskId) {
 
   if (response.ok) {
     alert('Task deleted successfully');
-    fetchTasks(); // refresh list
+    fetchTasks();
   } else {
     const error = await response.json();
     console.error('Delete failed:', error);
     alert('Failed to delete task: ' + (error.message || 'Unknown error'));
   }
-
 }
 
-// Fungsi edit task
+// Fungsi redirect ke halaman edit task
 function editTask(taskId) {
   window.location.href = `edit_task.html?id=${taskId}`;
 }
 
+//Logout: hapus token dan redirect ke login
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('token');
   localStorage.removeItem('role');

@@ -15,38 +15,37 @@ class TaskController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'staff') {
-            // Staff: hanya lihat task assigned ke dirinya
-            $tasks = Task::where('assigned_to', $user->id)->get();
+            // Staff: lihat hanya task yang diassign ke dia
+            $tasks = Task::with(['assignedUser', 'creator'])
+                        ->where('assigned_to', $user->id)
+                        ->get();
         }
         elseif ($user->role === 'manager') {
-            $tasks = Task::where('created_by', $user->id)
-                ->orWhereIn('assigned_to', function($query) {
-                    $query->select('id')
-                        ->from('users')
-                        ->where('role', 'staff');
-                })
-                ->get();
+            // Manager: lihat task yang dibuat dia atau assigned ke staff
+            $tasks = Task::with(['assignedUser', 'creator'])
+                        ->where('created_by', $user->id)
+                        ->orWhereIn('assigned_to', function($query) {
+                            $query->select('id')
+                                ->from('users')
+                                ->where('role', 'staff');
+                        })
+                        ->get();
         }
-
         else {
-            // Admin: lihat semua
-            $tasks = Task::all();
+            // Admin: lihat semua task
+            $tasks = Task::with(['assignedUser', 'creator'])->get();
         }
 
-        \Log::info('Task index accessed by: '.auth()->user()->role);
-        \Log::info('User '.$user->id.' role '.$user->role.' fetching tasks.');
-        \Log::info('Tasks fetched: ', $tasks->toArray()); 
-          
+        \Log::info('Tasks fetched by user role: ' . $user->role);
+
         return response()->json($tasks);
     }
-
-
-
 
     public function store(Request $request)
     {
         $user = Auth::user();
 
+        // Validasi input task baru
         $validated = $request->validate([
             'title' => 'required',
             'description' => 'required',
@@ -63,7 +62,7 @@ class TaskController extends Controller
         }
 
         $validated['created_by'] = $user->id;
-        $validated['id'] = (string) Str::uuid();
+        $validated['id'] = (string) Str::uuid(); // Generate UUID untuk id task
 
         $task = Task::create($validated);
 
@@ -72,15 +71,14 @@ class TaskController extends Controller
 
     public function update(Request $request, $id)
     {
-        \Log::info('Updating task id: '.$id.' by user: '.Auth::id(), $request->all());
+        \Log::info('Updating task id: '.$id);
 
         $task = Task::findOrFail($id);
         $user = Auth::user();
 
-        // Staff: hanya bisa update status jika task diassign ke dia
         if ($user->role === 'staff') {
+            // Staff hanya bisa update status task yang diassign ke dia
             if ($task->assigned_to !== $user->id) {
-                \Log::warning('Unauthorized staff update attempt by user: '.$user->id);
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 
@@ -88,11 +86,9 @@ class TaskController extends Controller
                 'status' => 'required|in:pending,in_progress,done',
             ]);
         }
-        // Manager & Admin
         else {
-            // Only admin or creator can update
-            if ($user->id !== $task->created_by && $user->role !== 'admin') {
-                \Log::warning('Unauthorized update attempt by user: '.$user->id);
+            // Manager & Admin: bisa update task
+            if (!in_array($user->role, ['admin', 'manager']) && $user->id !== $task->created_by) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 
@@ -111,13 +107,12 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-
     public function destroy($id)
     {
         $task = Task::findOrFail($id);
         $user = Auth::user();
 
-        // Only admin or creator can delete
+        // Hanya admin atau creator yang bisa delete
         if ($user->id !== $task->created_by && $user->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }

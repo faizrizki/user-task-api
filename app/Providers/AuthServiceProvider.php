@@ -15,25 +15,27 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Only admin can manage users
+        // Gate untuk manage users: hanya admin & manager
         Gate::define('manage-users', function ($user) {
-             return in_array($user->role, ['admin', 'manager']);
+            return in_array($user->role, ['admin', 'manager']);
         });
 
-        // Only admin and manager can view users
+        // Gate untuk view users: hanya admin & manager
         Gate::define('view-users', function ($user) {
             return in_array($user->role, ['admin', 'manager']);
         });
 
-
+        // Gate untuk view logs: hanya admin
         Gate::define('view-logs', function ($user) {
             return $user->role === 'admin';
         });
 
+        // Gate untuk manage tasks: admin, manager, staff
         Gate::define('manage-tasks', function ($user) {
             return in_array($user->role, ['admin', 'manager', 'staff']);
         });
 
+        // Gate untuk assign task: hanya manager
         Gate::define('assign-task', function ($user) {
             return $user->role === 'manager';
         });

@@ -16,6 +16,7 @@ class CheckUserStatus
      */
     public function handle(Request $request, Closure $next)
     {
+        // Jika user login tapi status false (inactive), blokir akses
          if (auth()->check() && !auth()->user()->status) {
             return response()->json(['message' => 'Your account is inactive'], 403);
         }

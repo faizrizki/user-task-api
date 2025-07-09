@@ -35,9 +35,15 @@ class Task extends Model
     }
 
 
-    // Relasi ke User
+    // Relasi task ke user yang diassign
     public function assignedUser()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    // Relasi task ke user yang membuat task
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

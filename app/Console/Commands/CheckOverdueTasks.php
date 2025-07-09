@@ -14,11 +14,14 @@ class CheckOverdueTasks extends Command
 
     public function handle()
     {
+    try {
+        // Ambil semua task yang sudah lewat due_date dan belum selesai
         $tasks = Task::where('due_date', '<', now())
                      ->where('status', '!=', 'done')
                      ->get();
 
         foreach ($tasks as $task) {
+            // Buat activity log untuk task yang overdue
             ActivityLog::create([
                 'id' => (string) Str::uuid(),
                 'user_id' => $task->assigned_to,
@@ -29,5 +32,8 @@ class CheckOverdueTasks extends Command
         }
 
         $this->info('Checked and logged overdue tasks successfully.');
+        } catch (\Exception $e) {
+            $this->error('Failed to check overdue tasks: ' . $e->getMessage());
+        }
     }
 }

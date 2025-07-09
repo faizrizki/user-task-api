@@ -1,5 +1,5 @@
 const token = localStorage.getItem('token');
-
+// submit form create user
 document.getElementById('userForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
