@@ -137,4 +137,15 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   window.location.href = 'login.html';
 });
 
+// Menampilkan tombol View Logs hanya untuk admin
+const logsButton = document.getElementById('logsButton');
+if (logsButton) {
+  if (role === 'admin') {
+    logsButton.innerHTML = '<a href="logs.html" class="btn btn-warning btn-sm">View Activity Logs</a>';
+  } else {
+    logsButton.innerHTML = '';
+  }
+}
+
+
 fetchTasks();
