@@ -23,13 +23,9 @@ Sistem manajemen user dan task dengan role-based authorization (**Admin, Manager
 ✅ **Activity Logs**
 - View logs (hanya admin)
 
----
-
-## 🗂 ERD
-
-![ERD](erd.png)
 
 ---
+
 
 ## ⚙️ Setup
 
@@ -74,6 +70,9 @@ php artisan migrate
 6. Jalankan server lokal
 php artisan serve
 Akses di: http://127.0.0.1:8000
+
+7. Jalankan Frontend
+Menggunakan Live Server
 
 🔑 Endpoint Utama
 | Method | Endpoint        | Role Akses            | Deskripsi                    |
@@ -143,6 +142,8 @@ MySQL / MariaDB
 Postman (testing)
 
 VSCode
+
+---
 
 +--------------------+          +-------------------------------+      +-------------------------+
 |       Users        |          |       Tasks                   |      |     Activity Logs       |
@@ -222,6 +223,7 @@ erDiagram
 | **action**      | string    | Aksi yang dilakukan, misal: `create_user`, `update_task` |
 | **description** | text      | Deskripsi rinci aktivitas                                |
 | **logged\_at**  | datetime  | Waktu pencatatan aktivitas                               |
+
 
 
 👤 Penulis
